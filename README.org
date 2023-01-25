@@ -93,17 +93,22 @@ git clone git@github.com/simoninireland/org-roam-tags.git
 
 ** In use
 
+   Assuming you've used my key bindings from above, then:
+
    To add a content tag at point, use ~C-c g~
    (~org-roam-tags-tag-note-at-point~). This will prompt for a content
    tag, which are taken as all the notes matching the
    ~org-roam-tags-tag-regexp~ (see below).
 
    To add a content tag to a predictable place in a note, by default
-   at the end, use ~C-c C-g~ (~org-roam-tags-tag-note~).
+   at the end, use ~C-c C-g~ (~org-roam-tags-tag-note~). This looks
+   for (and adds if necessary) a line beginning "+ tags :: " and then
+   adds the selected content tag.
 
-   To find all tagged pages, just follow a content type link. This
-   will open a buffer containing the backlinks to the tag. This is
-   simply an ~org-roam-mode~ buffer, dedicated to the tag.
+   To find all pages tagged with a content tag, just follow a content
+   tag link. This will open a buffer containing the backlinks to the
+   tag. This is simply an ~org-roam-mode~ buffer dedicated to the
+   tag.
 
 *** New content tags
 
@@ -112,15 +117,21 @@ git clone git@github.com/simoninireland/org-roam-tags.git
     essentially no information: just a top-level heading with the tag
     name. You can open the note and add information if you choose to.
 
-*** Customisation
+*** Customising content tag titles
 
-    At the moment there is one customisation variable,
-    ~org-roam-tags-tag-regexp~, defining a regular expression that
-    defines a content tag page title. Tags /have/ to have single-word
-    title, but this can be further customised using this variable. The
-    default regexp is single-word titles consisting only of lower-case
-    letters, digits, and dashes:
+    ~org-roam-tags~ manages content tags through the ~org-roam~
+    Deciding whether a note is a content tag has two stages, both
+    customisable /via/ the ~org-roam~ customisation group.
 
-    #+begin_src emacs-lisp
-(rx (seq bol (one-or-more (in lower digit "-")) eol))
-    #+end_src
+    Firstly, tags are identified at the database (SQL) level using an
+    SQL ~LIKE~ expression. Potential tags must match
+    ~org-roam-tags-tag-sql~. By default this is set to match all
+    single words, without spaces, and there seems to be little reason
+    to change that.
+
+    Secondly, tag-like titles from the database are only tags if they
+    match ~org-roam-tags-tag-regexp~, which is an Emacs regular
+    expression (regexp). The default regexp matches single-word titles
+    consisting only of lower-case letters, digits, and dashes. This
+    could be changed to, for example, include all titles beginning
+    with "tag:", or something similar.
