@@ -1,0 +1,96 @@
+* ~org-roam-tags~: Manage content tags in ~org-roam~ notes
+
+** Links, backlinks, and content tags
+
+   ~org-roam~ mode provides a database layer on top of Emacs ~org~
+   mode that keeps better track of note metadata. Amongst other
+   things, it keeps track of links between notes so that we can search
+   for the notes that a note is linked /from/ as well as those it
+   links /to/. These linked-from links are called /backlinks/.
+
+   Having backlinks provides a new way to tag notes. As well as
+   looking for backlinks to any selected note (which is what the
+   ~org-roam-mode~ buffer does), we can designate some notes as tags
+   that are intended purely as the targets for links from other notes.
+   They themselves don't have to hold any content (although they
+   might): they're there purely to be link targets. This is somewhat
+   more general than ordinary ~org~ mode tags, which can only be
+   attached to headings and have no relationships between them: these
+   ~org-roam~ links can appear anywhere in a note, and can if desired
+   be linked to other tags to indicate taxonomic links. We refer to
+   notes used in this way as /content tags/.
+
+   This kind of tagging has been used since the start of ~org-roam~.
+   Jethro Kuan describes it in a [[https://blog.jethro.dev/posts/zettelkasten_with_org/][blog post]]. The idea is that one can
+   simply and easily create new notes to act as tags, and then use
+   backlinks to interact with the tag set.
+
+   The advantage of using notes as tags is that any document can be
+   linked to and then searched for backlinks. The disadvantage is
+   exactly the same: which notes are tags, and which not? Sometimes
+   it's useful to differentiate between the two kinds of notes.
+
+** Why you might want to use this package
+
+   ~org-roam-tags~ is a small package to differentiate between the two
+   kinds of notes, to make tagging easier.
+
+   A sub-set of nodes is designated /content tags/. These have a
+   recognised title pattern: I use single words consisting only of
+   lower-case letters, digits, and dashes , but any regexp will do.
+   ~org-roam-tags~ then provides two functions to add content tags:
+   one adds a tag inline at point; another creates a tag line at the
+   bottom of the note and adds them there. Since only tags are
+   presented for selection, not all notes, there are a lot fewer notes
+   to choose from. Tags can be created on the fly if they don;t
+   already exist.
+
+   A content tag is just a note, but one that's useful without having
+   any content: it's there as a link target. If you follow a link to a
+   content tag. opening it therefore probably won't be all that
+   interesting -- and so it's the natural do-what-I-mean option that
+   Emacs prefers. ~org-roam-tags~ therefore changes how link-following
+   behaves. If you follow a link to a content tag, it opens the
+   backlinks to that note -- the notes tagged with that tag -- which
+   is a lot more likely to be what you want. You can still open
+   content tag pages in the normal way, add content to them (for
+   example to describe what the tag indicates), and even add links to
+   other tags (or notes) to form a simple taxonomy of content tags.
+
+** Installation
+
+   At thew moment ~org-roam-tags~ isn't on MELPA. The following will
+   install the code manually. First choose an installation directory,
+   which we'll refer to as "<dir>". In a shell, ~cd <dir>~ and clone
+   the repo:
+
+   #+begin_src sh
+git clone git@github.com/simoninireland/org-roam-tags.git
+   #+end_src
+
+   Add lines to your ~emacs.el~ startup file to load the package:
+
+   #+begin_src emacs-lisp
+      (add-to-list #'load-path (expand-file "<dir>/org-roam-tags>")
+      (require 'org-roam-tags)
+
+   #+end_src
+
+   Finally, bind the ~org-roam-tags~ to appropriate keys:
+
+   #+begin_src emacs-lisp
+(define-key org-mode-map (kbd "C-c C-g") #'org-roam-tags-tag-note)
+(define-key org-mode-map (kbd "C-c g") #'org-roam-tags-tag-note-at-point))
+   #+end_src
+
+** In use
+
+   To add a content tag at point, use ~C-c g~
+   (~org-roam-tags-tag-note-at-point~). This will prompt for a content
+   tag, which are taken as all the notes matching the
+   ~org-roam-tags-tag-regexp~ which defaults to notes with
+   single-word titles consisting only of lower-case letters, digits,
+   and dashes (~(rx (seq bol (one-or-more (in lower digit "-")) eol))~).
+
+   To add a content tag to a predictable place in a note, by default
+   at the end, use ~C-c C-g~ (~org-roam-tags-tag-note~).
