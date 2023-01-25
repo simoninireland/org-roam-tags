@@ -2,7 +2,7 @@
 
 ** Links, backlinks, and content tags
 
-   ~org-roam~ mode provides a database layer on top of Emacs ~org~
+   [[https://www.orgroam.com/][Org-roam]] mode provides a database layer on top of Emacs [[https://orgmode.org/][Org mode]]
    mode that keeps better track of note metadata. Amongst other
    things, it keeps track of links between notes so that we can search
    for the notes that a note is linked /from/ as well as those it
@@ -57,6 +57,11 @@
    example to describe what the tag indicates), and even add links to
    other tags (or notes) to form a simple taxonomy of content tags.
 
+   ~org-roam-tags~ doesn't stop you linking notes however you like,
+   doesn't change how you interact with notes, and doesn't prevent you
+   adding content to content tag pages. It just adds a shortcut way to
+   add and interact with tags.
+
 ** Installation
 
    At thew moment ~org-roam-tags~ isn't on MELPA. The following will
@@ -88,9 +93,28 @@ git clone git@github.com/simoninireland/org-roam-tags.git
    To add a content tag at point, use ~C-c g~
    (~org-roam-tags-tag-note-at-point~). This will prompt for a content
    tag, which are taken as all the notes matching the
-   ~org-roam-tags-tag-regexp~ which defaults to notes with
-   single-word titles consisting only of lower-case letters, digits,
-   and dashes (~(rx (seq bol (one-or-more (in lower digit "-")) eol))~).
+   ~org-roam-tags-tag-regexp~ (see below).
 
    To add a content tag to a predictable place in a note, by default
    at the end, use ~C-c C-g~ (~org-roam-tags-tag-note~).
+
+   To find all tagged pages, just follow a content type link. This
+   will open a buffer containing the backlinks to the tag. This is
+   simply an ~org-roam-mode~ buffer, dedicated to the tag.
+
+*** New content tags
+
+    If you enter a tag that isn't present, ~org-roam-tags~ creates a
+    new note with that title and links to it. The note contains
+    essentially no information: just a top-level heading with the tag
+    name. You can open the note and add information if you choose to.
+
+*** Customisation
+
+    At the moment there is one customisation variable,
+    ~org-roam-tags-tag-regexp~, defining a regular expression that
+    defines a content tag page title. Tags /have/ to have single-word
+    title, but this can be further customised using this variable. The
+    default regexp is single-word titles consisting only of lower-case
+    letters, digits, and dashes (~(rx (seq bol (one-or-more (in lower
+    digit "-")) eol))~).
