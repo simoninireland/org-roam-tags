@@ -269,9 +269,49 @@ drop-through to the rest of the handlers."
 	  t)))))
 
 
-;; ---------- Public interface ----------
+;; ---------- Tag selection ----------
 
-;; sd: should this just use `completing-read' rather than commit to helm?
+;; This uses `completing-read' by default, and `helm' if present.
+
+(defun org-roam-tags--select-tag-and-go-default (f)
+  "Select a content tag and pass it to F."
+  (let ((tag (completing-read "Content tag: " (org-roam-tags--tags) nil nil)))
+    (if tag
+	(funcall f tag))))
+
+(defun org-roam-tags--select-tag-and-go (f)
+  "Select a content tag using `helm' and pass it to F."
+  (helm :sources (helm-build-sync-source "org-roam tags"
+		   :candidates #'org-roam-tags--tags
+		   :volatile t
+		   :must-match 'ignore
+		   :action (list (cons "Add tag to tag line of note"
+				       (lambda (tag)
+					 (funcall f tag)))))
+	:buffer "*org-roam content tags"
+	:prompt "Content tag: "))
+
+(if (featurep 'helm)
+    (defun org-roam-tags--select-tag-and-go (f)
+      "Select a content tag using `helm' and pass it to F."
+      (helm :sources (helm-build-sync-source "org-roam tags"
+		       :candidates #'org-roam-tags--tags
+		       :volatile t
+		       :must-match 'ignore
+		       :action (list (cons "Add tag to tag line of note"
+					   (lambda (tag)
+					     (funcall f tag)))))
+	    :buffer "*org-roam content tags"
+	    :prompt "Content tag: "))
+
+  (defun org-roam-tags--select-tag-and-go (f)
+    "Select a content tag and pass it to F."
+    (let ((tag (completing-read "Content tag: " (org-roam-tags--tags) nil nil)))
+      (if tag
+	  (funcall f tag)))))
+
+
+;; ---------- Public interface ----------
 
 (defun org-roam-tags-tag-note ()
   "Tag the current note by adding a tag to its tag line.
@@ -279,15 +319,7 @@ drop-through to the rest of the handlers."
 The tag is selected interactively. A tag line is added if needed.
 If the tag is new, a tag note is created for it."
   (interactive)
-  (helm :sources (helm-build-sync-source "org-roam tags"
-		   :candidates #'org-roam-tags--tags
-		   :volatile t
-		   :must-match 'ignore
-		   :action (list (cons "Add tag to tag line of note"
-				       (lambda (tag)
-					 (org-roam-tags--insert-file-tag tag)))))
-	:buffer "*org-roam tags"
-	:prompt "org-roam tag: "))
+  (org-roam-tags--select-tag-and-go #'org-roam-tags--insert-file-tag))
 
 (defun org-roam-tags-tag-note-at-point ()
   "Tag the current note by inserting a tag at point.
@@ -295,15 +327,7 @@ If the tag is new, a tag note is created for it."
 The tag is selected interactively and if the tag is new, a
 tag note is created for it."
   (interactive)
-  (helm :sources (helm-build-sync-source "org-roam tags"
-		   :candidates #'org-roam-tags--tags
-		   :volatile t
-		   :must-match 'ignore
-		   :action (list (cons "Add tag to note"
-				       (lambda (tag)
-					 (org-roam-tags--insert-tag tag)))))
-	:buffer "*org-roam tags*"
-	:prompt "org-roam tag: "))
+  (org-roam-tags--select-tag-and-go #'org-roam-tags--insert-tag))
 
 
 ;; ---------- Installation----------

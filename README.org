@@ -23,7 +23,8 @@
    This kind of tagging has been used since the start of ~org-roam~.
    Jethro Kuan describes it in a [[https://blog.jethro.dev/posts/zettelkasten_with_org/][blog post]]. The idea is that one can
    simply and easily create new notes to act as tags, and then use
-   backlinks to interact with the tag set.
+   backlinks to interact with the tag set. Tags are just notes
+   rather than being something separate and special.
 
    The advantage of using notes as tags is that any document can be
    linked to and then searched for backlinks. The disadvantage is
@@ -42,7 +43,7 @@
    one adds a tag inline at point; another creates a tag line at the
    bottom of the note and adds them there. Since only tags are
    presented for selection, not all notes, there are a lot fewer notes
-   to choose from. Tags can be created on the fly if they don;t
+   to choose from. Tags can be created on the fly if they don't
    already exist.
 
    A content tag is just a note, but one that's useful without having
@@ -80,6 +81,9 @@ git clone git@github.com/simoninireland/org-roam-tags.git
       (require 'org-roam-tags)
 
    #+end_src
+
+   If you have [[https://emacs-helm.github.io/helm/][Helm]] installed then ~org-roam-tags~ will automatically
+   use it instead of normal completion when entering tags.
 
    Finally, bind the ~org-roam-tags~ to appropriate keys:
 
