@@ -49,12 +49,28 @@
 
 ;; ---------- Tags ----------
 
-(defvar org-roam-tags-tag-regexp (rx (seq bol (one-or-more (in lower digit "-")) eol))
+(defcustom org-roam-tags-tag-sql "# #"
+  "SQL LIKE expression for recognising tags.
+
+Returns all 'tag-like' note titles using a database query. The
+actual tags must match this SQL expression and also the regexp
+defined in `org-roam-tags-tag-regexp'.
+
+The default matches all single words, without spaces. There's
+probably no need to change this."
+  :tag "Org Roam content tag SQL LIKE expression"
+  :type 'string
+  :group 'org-roam)
+
+(defcustom org-roam-tags-tag-regexp (rx (seq bol (one-or-more (in lower digit "-")) eol))
   "Regular expression for recognising tags.
 
-Tags are always single words, without spaces. This regexp further
+Tags must always match `org-roam-tags-tag-sql'. This regexp further
 constrains the patterns used. The default is single words composed
-of lowercase letters, digits, and dashes.")
+of lowercase letters, digits, and dashes."
+  :tag "Org Roam content tag regexp"
+  :type 'regexp
+  :group 'org-roam)
 
 (defun org-roam-tags-tag-p (taglike)
   "Test whether TAGLIKE is a tag.
@@ -79,7 +95,7 @@ Tags are selected by matching `org-roam-tags-tag-regexp', case-sensitively."
 
 The tags are returned in alphabetical order."
   (let ((taglike (org-roam-db-query [:select title :from nodes
-				     :where  (not (like title "% %"))])))
+				     :where  (not (like title $s1))] org-roam-tags-tag-sql)))
     (sort (org-roam-tags--only-tags (mapcar #'car taglike)) #'string<)))
 
 (defun org-roam-tags--id-for-tag (tag)
