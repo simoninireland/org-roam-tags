@@ -88,6 +88,9 @@ git clone git@github.com/simoninireland/org-roam-tags.git
 (define-key org-mode-map (kbd "C-c g") #'org-roam-tags-tag-note-at-point))
    #+end_src
 
+   You can use any free key bindings you like. It only makes sense to
+   add bindings to the ~org-mode-map~ keymap (or one derived from it).
+
 ** In use
 
    To add a content tag at point, use ~C-c g~
@@ -116,5 +119,8 @@ git clone git@github.com/simoninireland/org-roam-tags.git
     defines a content tag page title. Tags /have/ to have single-word
     title, but this can be further customised using this variable. The
     default regexp is single-word titles consisting only of lower-case
-    letters, digits, and dashes (~(rx (seq bol (one-or-more (in lower
-    digit "-")) eol))~).
+    letters, digits, and dashes:
+
+    #+begin_src emacs-lisp
+(rx (seq bol (one-or-more (in lower digit "-")) eol))
+    #+end_src
