@@ -6,7 +6,7 @@
 ;; Maintainer: Simon Dobson <simoninireland@gmail.com>
 ;; Version: 0.1.1
 ;; Keywords: hypermedia, multimedia
-;; Homepage: https://github.com/simoninireland/ox-attach-publish
+;; Homepage: https://github.com/simoninireland/org-roam-tags
 ;; Package-Requires: ((emacs "27.2") (org "8.0") (org-roam)
 
 ;; This file is NOT part of GNU Emacs.
@@ -33,12 +33,12 @@
 ;; Org tags as they can be added anywhere in a note, not simply to
 ;; headings. We refer to thes emore flexible tags as "content" tags.
 ;;
-;; org-roam-tags provides two operations:
+;; org-roam-tags provides three operations:
 ;;
-;; - functions to add new content tags, either inline or at file lavel
+;; - functions to add new content tags, either inline or at file level
+;; - a function to open a backlinks buffer for a content tag
 ;; - a change to how links to content tags behave when followed,
-;;   making them open the backlinks page to show all the notes
-;;   linking to this tag
+;;   making them open the backlinks buffer (instead of the tag's note)
 
 ;;; Code:
 
@@ -87,8 +87,13 @@ Tags are selected by matching `org-roam-tags-tag-regexp', case-sensitively."
 ;; ---------- Database interaction----------
 
 ;; We always go stright to the database with queries, rather than
-;; construct a Lisp data structure. The tags are then filtered at
-;; the Emacs level, since the pattern is too complicated for SQL.
+;; construct a Lisp data structure.
+;;
+;; Tags arew filtered twice, once in SQL and once in Emacs. The first
+;; sift should take out most non-tag notes; the second refines that selection
+;; ready to be presented for choice.
+;;
+;; The SQL queries are in the form used by emacsql.
 
 (defun org-roam-tags--tags ()
   "Return the list of tags.
@@ -190,26 +195,31 @@ if not."
   (if (not (org-roam-tags--tag-exists-p tag))
       (org-roam-tags--create-tag tag)))
 
-(defun org-roam-tags--insert-file-tag (tag)
-  "Insert TAG into the file tag line.
+(defun org-roam-tags--find-file-tags-line ()
+  "Find a file-level line to hold tags, moving point there.
 
 The tag line is of the form '+ tags ::' at the bottom
-of the file."
+of the file. New tags are added after old. A line is created
+if there isn't one already."
+  ;; find the tag line
+  (goto-char (point-max))
+  (if (re-search-backward (rx (seq bol "+ tags ::")) nil t)
+      ;; line found, move to the end
+      (end-of-line)
+
+    ;; line not found, add one
+    (progn
+      (goto-char (point-max))
+      (insert "\n\n"
+	      "+ tags ::")))
+
+  ;; add a space ready for the new tag
+  (insert " "))
+
+(defun org-roam-tags--insert-file-tag (tag)
+  "Insert TAG into the file tag line."
   (save-excursion
-    ;; find the tag line
-    (goto-char (point-max))
-    (if (re-search-backward (rx (seq bol "+ tags ::")) nil t)
-	;; line found, move to the end
-	(end-of-line)
-
-      ;; line not found, add one
-      (progn
-	(goto-char (point-max))
-	(insert "\n\n"
-		"+ tags ::")))
-
-    ;; add the tag link
-    (insert " ")
+    (org-roam-tags--find-file-tags-line)
     (org-roam-tags--ensure-tag-exists tag)
     (org-roam-tags--insert-link-for-tag tag)))
 
