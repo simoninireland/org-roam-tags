@@ -283,24 +283,6 @@ drop-through to the rest of the handlers."
 
 ;; This uses `completing-read' by default, and `helm' if present.
 
-(defun org-roam-tags--select-tag-and-go-default (f)
-  "Select a content tag and pass it to F."
-  (let ((tag (completing-read "Content tag: " (org-roam-tags--tags) nil nil)))
-    (if tag
-	(funcall f tag))))
-
-(defun org-roam-tags--select-tag-and-go (f)
-  "Select a content tag using `helm' and pass it to F."
-  (helm :sources (helm-build-sync-source "org-roam tags"
-		   :candidates #'org-roam-tags--tags
-		   :volatile t
-		   :must-match 'ignore
-		   :action (list (cons "Add tag to tag line of note"
-				       (lambda (tag)
-					 (funcall f tag)))))
-	:buffer "*org-roam content tags"
-	:prompt "Content tag: "))
-
 (if (featurep 'helm)
     (defun org-roam-tags--select-tag-and-go (f)
       "Select a content tag using `helm' and pass it to F."
