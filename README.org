@@ -77,14 +77,12 @@ git clone git@github.com/simoninireland/org-roam-tags.git
    Add lines to your ~emacs.el~ startup file to load the package:
 
    #+begin_src emacs-lisp
-      (add-to-list #'load-path (expand-file "<dir>/org-roam-tags>")
+      (add-to-list 'load-path (expand-file "<dir>/org-roam-tags>")
       (require 'org-roam-tags)
 
    #+end_src
 
-   If you have [[https://emacs-helm.github.io/helm/][Helm]] installed then ~org-roam-tags~ will automatically
-   use it instead of normal completion when entering tags.
-
+   (where ~<dir>~ is the directory where you cloned the repo.).
    Finally, bind the ~org-roam-tags~ functions to some appropriate
    keys:
 
@@ -106,6 +104,9 @@ git clone git@github.com/simoninireland/org-roam-tags.git
    (~org-roam-tags-tag-note-at-point~). This will prompt for a content
    tag, which are taken as all the notes matching the
    ~org-roam-tags-tag-regexp~ (see below).
+
+   If you have [[https://emacs-helm.github.io/helm/][Helm]] installed then ~org-roam-tags~ will automatically
+   use it instead of normal completion when entering tags.
 
    To add a content tag to a predictable place in a note, by default
    at the end, use ~C-c C-g~ (~org-roam-tags-tag-note~). This looks
