@@ -65,7 +65,7 @@
 
 ** Installation
 
-   At thew moment ~org-roam-tags~ isn't on MELPA. The following will
+   At the moment ~org-roam-tags~ isn't on MELPA. The following will
    install the code manually. First choose an installation directory,
    which we'll refer to as ~<dir>~. In a shell, ~cd <dir>~ and clone
    the repo:
