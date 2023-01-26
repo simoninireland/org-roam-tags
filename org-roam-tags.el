@@ -329,6 +329,11 @@ tag note is created for it."
   (interactive)
   (org-roam-tags--select-tag-and-go #'org-roam-tags--insert-tag))
 
+(defun org-roam-tags-open-tag ()
+  "Select a tag and open it."
+  (interactive)
+  (org-roam-tags--select-tag-and-go #'org-roam-tags--open-tag))
+
 
 ;; ---------- Installation----------
 

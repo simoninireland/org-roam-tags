@@ -85,15 +85,18 @@ git clone git@github.com/simoninireland/org-roam-tags.git
    If you have [[https://emacs-helm.github.io/helm/][Helm]] installed then ~org-roam-tags~ will automatically
    use it instead of normal completion when entering tags.
 
-   Finally, bind the ~org-roam-tags~ to appropriate keys:
+   Finally, bind the ~org-roam-tags~ functions to some appropriate
+   keys:
 
    #+begin_src emacs-lisp
 (define-key org-mode-map (kbd "C-c C-g") #'org-roam-tags-tag-note)
-(define-key org-mode-map (kbd "C-c g") #'org-roam-tags-tag-note-at-point))
+(define-key org-mode-map (kbd "C-c g") #'org-roam-tags-tag-note-at-point)
+(define-key org-mode-map (kbd "C-c M-g") #'org-roam-tags-open-tag)
    #+end_src
 
-   You can use any free key bindings you like. It only makes sense to
-   add bindings to the ~org-mode-map~ keymap (or one derived from it).
+   You can use any free key bindings you like, of course. It only
+   makes sense to add bindings to the ~org-mode-map~ keymap (or one
+   derived from it).
 
 ** In use
 
@@ -109,10 +112,14 @@ git clone git@github.com/simoninireland/org-roam-tags.git
    for (and adds if necessary) a line beginning "+ tags :: " and then
    adds the selected content tag.
 
-   To find all pages tagged with a content tag, just follow a content
-   tag link. This will open a buffer containing the backlinks to the
-   tag. This is simply an ~org-roam-mode~ buffer dedicated to the
-   tag.
+   To see the notes with a given content tag. use ~C-c M-g~
+   (~org-roam-tags-open-tag~). This will open a buffer containing the
+   backlinks to the tag. This is simply an ~org-roam-mode~ buffer
+   dedicated to the tag.
+
+   Or, if you have a note open that's tagged with a given content tag,
+   just follow it's link (by clicking it, or using ~C-c o~). This
+   opens the same kind of buffer.
 
 *** New content tags
 
