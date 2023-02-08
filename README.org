@@ -1,5 +1,8 @@
 * ~org-roam-tags~: Manage content tags in ~org-roam~ notes
 
+  ~org-roam-tags~ is a package to simplify interacting with tags on
+  Org-roam notes.
+
 ** Links, backlinks, and content tags
 
    [[https://www.orgroam.com/][Org-roam]] mode provides a database layer on top of Emacs [[https://orgmode.org/][Org mode]]
@@ -23,7 +26,7 @@
    This kind of tagging has been used since the start of ~org-roam~.
    Jethro Kuan describes it in a [[https://blog.jethro.dev/posts/zettelkasten_with_org/][blog post]]. The idea is that one can
    simply and easily create new notes to act as tags, and then use
-   backlinks to interact with the tag set. Tags are just notes
+   backlinks to interact with the tag set. Tags are just notes,
    rather than being something separate and special.
 
    The advantage of using notes as tags is that any document can be
@@ -48,15 +51,17 @@
 
    A content tag is just a note, but one that's useful without having
    any content: it's there as a link target. If you follow a link to a
-   content tag. opening it therefore probably won't be all that
-   interesting -- and so it's the natural do-what-I-mean option that
-   Emacs prefers. ~org-roam-tags~ therefore changes how link-following
-   behaves. If you follow a link to a content tag, it opens the
-   backlinks to that note -- the notes tagged with that tag -- which
-   is a lot more likely to be what you want. You can still open
-   content tag pages in the normal way, add content to them (for
-   example to describe what the tag indicates), and even add links to
-   other tags (or notes) to form a simple taxonomy of content tags.
+   content tag. opening it probably won't be all that interesting
+   ~org-roam-tags~ therefore changes how link-following behaves. If
+   you follow a link to a content tag, it opens the backlinks to that
+   note -- the notes tagged with that tag -- which is a more natural
+   do-what-I-mean option of the sort that Emacs prefers. There's also
+   as function to jump directly to the backlinks of any tag.
+
+   You can still open content tag pages in the normal way, add content
+   to them (for example to describe what the tag indicates), and even
+   add links to other tags (or notes) to form a simple taxonomy of
+   content tags.
 
    ~org-roam-tags~ doesn't stop you linking notes however you like,
    doesn't change how you interact with notes, and doesn't prevent you
@@ -79,7 +84,6 @@ git clone git@github.com/simoninireland/org-roam-tags.git
    #+begin_src emacs-lisp
       (add-to-list 'load-path (expand-file "<dir>/org-roam-tags>")
       (require 'org-roam-tags)
-
    #+end_src
 
    (where ~<dir>~ is the directory where you cloned the repo.).
@@ -132,8 +136,8 @@ git clone git@github.com/simoninireland/org-roam-tags.git
 *** Customising content tag titles
 
     ~org-roam-tags~ manages content tags through the ~org-roam~
-    Deciding whether a note is a content tag has two stages, both
-    customisable /via/ the ~org-roam~ customisation group.
+    database. Deciding whether a note is a content tag has two stages,
+    both customisable /via/ the ~org-roam~ customisation group.
 
     Firstly, tags are identified at the database (SQL) level using an
     SQL ~LIKE~ expression. Potential tags must match
@@ -146,4 +150,5 @@ git clone git@github.com/simoninireland/org-roam-tags.git
     expression (regexp). The default regexp matches single-word titles
     consisting only of lower-case letters, digits, and dashes. This
     could be changed to, for example, include all titles beginning
-    with "tag:", or something similar.
+    with "tag:", or something similar: anything that doesn't conflict
+    with the names you give to "normal" notes.
