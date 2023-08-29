@@ -100,21 +100,24 @@ Tags are selected by matching `org-roam-tags-tag-regexp', case-sensitively."
 
 The tags are returned in alphabetical order."
   (let ((taglike (org-roam-db-query [:select title :from nodes
-				     :where  (not (like title $s1))] org-roam-tags-tag-sql)))
+				     :where  (not (like title $s1))]
+				    org-roam-tags-tag-sql)))
     (sort (org-roam-tags--only-tags (mapcar #'car taglike)) #'string<)))
 
 (defun org-roam-tags--id-for-tag (tag)
   "Return the id associated with TAG."
   (if (org-roam-tags-tag-p tag)
       (let ((id (org-roam-db-query [:select id :from nodes
-				    :where (= title $s1)] tag)))
+				    :where (= title $s1)]
+				   tag)))
 	(if (not (null id))
 	    (caar id)))))
 
 (defun org-roam-tags--tag-for-id (id)
   "Return the tag associated with ID."
   (let ((tag (org-roam-db-query [:select title :from nodes
-				 :where (= id $s1)] id)))
+				 :where (= id $s1)]
+				id)))
     (if (and (not (null tag))
 	     (org-roam-tags-tag-p (caar tag)))
 	(caar tag))))
@@ -122,7 +125,8 @@ The tags are returned in alphabetical order."
 (defun org-roam-tags--file-for-id (id)
   "Return the file where ID is defined."
   (let ((files (org-roam-db-query [:select file :from nodes
-				   :where (= id $s1)] id)))
+				   :where (= id $s1)]
+				  id)))
     (if (not (null files))
 	(caar files))))
 
@@ -188,12 +192,15 @@ Return the id used as the target for this tag."
     id))
 
 (defun org-roam-tags--ensure-tag-exists (tag)
-  "Ensire there is a tag page for TAG.
+  "Ensure there is a tag page for TAG.
 
 This is a no-op if the tag already exists, and creates it
-if not."
+if not, in either case returning T. Returns nil if the
+user rejects creating the tag."
   (if (not (org-roam-tags--tag-exists-p tag))
-      (org-roam-tags--create-tag tag)))
+      (if (yes-or-no-p (format "Create new tag %s? " tag))
+	  (org-roam-tags--create-tag tag)
+	(message "Tag creation aborted"))))
 
 (defun org-roam-tags--find-file-tags-line ()
   "Find a file-level line to hold tags, moving point there.
@@ -220,8 +227,8 @@ if there isn't one already."
   "Insert TAG into the file tag line."
   (save-excursion
     (org-roam-tags--find-file-tags-line)
-    (org-roam-tags--ensure-tag-exists tag)
-    (org-roam-tags--insert-link-for-tag tag)))
+    (if (org-roam-tags--ensure-tag-exists tag)
+	(org-roam-tags--insert-link-for-tag tag))))
 
 (defun org-roam-tags--insert-tag (tag)
   "Insert TAG into the file at point.
