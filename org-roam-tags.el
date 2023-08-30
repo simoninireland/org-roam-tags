@@ -195,11 +195,14 @@ Return the id used as the target for this tag."
   "Ensure there is a tag page for TAG.
 
 This is a no-op if the tag already exists, and creates it
-if not, in either case returning T. Returns nil if the
+if not, in either case returning TAG. Returns nil if the
 user rejects creating the tag."
-  (if (not (org-roam-tags--tag-exists-p tag))
+  (if (org-roam-tags--tag-exists-p tag)
+      tag
       (if (yes-or-no-p (format "Create new tag %s? " tag))
-	  (org-roam-tags--create-tag tag)
+	  (progn
+	    (org-roam-tags--create-tag tag)
+	    tag)
 	(message "Tag creation aborted"))))
 
 (defun org-roam-tags--find-file-tags-line ()
@@ -211,8 +214,15 @@ if there isn't one already."
   ;; find the tag line
   (goto-char (point-max))
   (if (re-search-backward (rx (seq bol "+ tags ::")) nil t)
-      ;; line found, move to the end
-      (end-of-line)
+      ;; line found, move to the end and delete trailing whitespace
+      (progn
+	(let ((s (progn
+		   (beginning-of-line)
+		   (point)))
+	      (e (progn
+		   (end-of-line)
+		   (point))))
+	  (delete-trailing-whitespace)))
 
     ;; line not found, add one
     (progn
