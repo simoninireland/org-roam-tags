@@ -135,6 +135,14 @@ The tags are returned in alphabetical order."
   (not (null (org-roam-tags--id-for-tag tag))))
 
 
+(defun org-roam-tags--tags-for-element (id)
+  "Return the tags associated with the element ID."
+  (let ((links (mapcar #'car (org-roam-db-query [:select dest :from links
+						 :where (= source $s1)]
+						id))))
+    (-filter #'org-not-nil (mapcar #'org-roam-tags--tag-for-id links))))
+
+
 ;; ---------- Tagging ----------
 
 (defun org-roam-tags--link-for-tag (tag)
