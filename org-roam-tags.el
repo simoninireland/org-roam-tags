@@ -58,9 +58,17 @@ defined in `org-roam-tags-tag-regexp'.
 
 The default matches all single words, without spaces. There's
 probably no need to change this."
-  :tag "Org Roam content tag SQL LIKE expression"
+  :tag "Org Roam Tags content tag SQL LIKE expression"
   :type 'string
   :group 'org-roam)
+
+
+(defcustom org-roam-tags--file-tags-line-marker "+ tags ::"
+  "String used by org-roam-tags package to denote the start of the file tags line."
+  :tag "Org Roam Tags file tags line marker"
+  :group 'org-roam
+  :type 'string)
+
 
 (defcustom org-roam-tags-tag-regexp (rx (seq bol (one-or-more (in lower digit "-")) eol))
   "Regular expression for recognising tags.
@@ -68,9 +76,10 @@ probably no need to change this."
 Tags must always match `org-roam-tags-tag-sql'. This regexp further
 constrains the patterns used. The default is single words composed
 of lowercase letters, digits, and dashes."
-  :tag "Org Roam content tag regexp"
+  :tag "Org Roam Tags content tag regexp"
   :type 'regexp
   :group 'org-roam)
+
 
 (defun org-roam-tags-tag-p (taglike)
   "Test whether TAGLIKE is a tag.
@@ -78,6 +87,7 @@ of lowercase letters, digits, and dashes."
 Tags are selected by matching `org-roam-tags-tag-regexp', case-sensitively."
   (let ((case-fold-search nil))
     (string-match org-roam-tags-tag-regexp taglike)))
+
 
 (defun org-roam-tags--only-tags (taglike)
   "Filters a list of TAGLIKE strings to remove those that are not tags."
@@ -104,31 +114,35 @@ The tags are returned in alphabetical order."
 				    org-roam-tags-tag-sql)))
     (sort (org-roam-tags--only-tags (mapcar #'car taglike)) #'string<)))
 
+
 (defun org-roam-tags--id-for-tag (tag)
   "Return the id associated with TAG."
   (if (org-roam-tags-tag-p tag)
       (let ((id (org-roam-db-query [:select id :from nodes
-				    :where (= title $s1)]
+					    :where (= title $s1)]
 				   tag)))
 	(if (not (null id))
 	    (caar id)))))
 
+
 (defun org-roam-tags--tag-for-id (id)
   "Return the tag associated with ID."
   (let ((tag (org-roam-db-query [:select title :from nodes
-				 :where (= id $s1)]
+					 :where (= id $s1)]
 				id)))
     (if (and (not (null tag))
 	     (org-roam-tags-tag-p (caar tag)))
 	(caar tag))))
 
+
 (defun org-roam-tags--file-for-id (id)
   "Return the file where ID is defined."
   (let ((files (org-roam-db-query [:select file :from nodes
-				   :where (= id $s1)]
+					   :where (= id $s1)]
 				  id)))
     (if (not (null files))
 	(caar files))))
+
 
 (defun org-roam-tags--tag-exists-p (tag)
   "Test whether TAG exists as a tag."
@@ -154,15 +168,18 @@ The target of the link is the id associated with TAG."
 	(format "[[id:%s][%s]]" id tag)
       (error (format "No tag %s" tag)))))
 
+
 (defun org-roam-tags--insert-link-for-tag (tag)
   "Insert a link at point to TAG."
   (let ((link (org-roam-tags--link-for-tag tag)))
     (if link
 	(insert link))))
 
+
 (defun org-roam-tags--tag-filename (tag)
   "Return the filename for a note associated with TAG."
   (concat (expand-file-name org-roam-directory) "/" tag ".org"))
+
 
 (defun org-roam-tags--create-tag (tag)
   "Create a new org mode page for TAG.
@@ -199,6 +216,7 @@ Return the id used as the target for this tag."
     ;; return the new tag's id
     id))
 
+
 (defun org-roam-tags--ensure-tag-exists (tag)
   "Ensure there is a tag page for TAG.
 
@@ -207,46 +225,64 @@ if not, in either case returning TAG. Returns nil if the
 user rejects creating the tag."
   (if (org-roam-tags--tag-exists-p tag)
       tag
-      (if (yes-or-no-p (format "Create new tag %s? " tag))
-	  (progn
-	    (org-roam-tags--create-tag tag)
-	    tag)
-	(message "Tag creation aborted"))))
+    (if (yes-or-no-p (format "Create new tag %s? " tag))
+	(progn
+	  (org-roam-tags--create-tag tag)
+	  tag)
+      (message "Tag creation aborted"))))
+
 
 (defun org-roam-tags--find-file-tags-line ()
   "Find a file-level line to hold tags, moving point there.
 
-The tag line is of the form '+ tags ::' at the bottom
-of the file. New tags are added after old. A line is created
-if there isn't one already."
-  ;; find the tag line
+The tag line is of the form '+ tags ::' at the bottom of the
+file. Point is left immediately after the tags marker."
   (goto-char (point-max))
-  (if (re-search-backward (rx (seq bol "+ tags ::")) nil t)
-      ;; line found, move to the end and delete trailing whitespace
+  (if (re-search-backward (concat "^" org-roam-tags--file-tags-line-marker) nil t)
+      ;; line found
       (progn
-	(let ((s (progn
-		   (beginning-of-line)
-		   (point)))
-	      (e (progn
-		   (end-of-line)
-		   (point))))
-	  (delete-trailing-whitespace)))
+	;; move to after the marker
+	(forward-char (length org-roam-tags--file-tags-line-marker)))
 
     ;; line not found, add one
     (progn
       (goto-char (point-max))
       (insert "\n\n"
-	      "+ tags ::")))
+	      org-roam-tags--file-tags-line-marker))))
 
-  ;; add a space ready for the new tag
+
+(defun org-roam-tags--find-file-tags-line-and-append ()
+  "Move point ready to receive a new tag."
+  (org-roam-tags--find-file-tags-line)
+
+  ;; delete trailing whitespace
+  (save-excursion
+    (let ((s (progn
+	       (beginning-of-line)
+	       (point)))
+	  (e (progn
+	       (end-of-line)
+	       (point))))
+      (delete-trailing-whitespace s e)))
+
+  ;; prepare to insert
+  (end-of-line)
   (insert " "))
+
+
+(defun org-roam-tags--find-file-tags-line-and-clear ()
+  "Ensure there is an empty tags line in the buffer."
+  (org-roam-tags--find-file-tags-line)
+  (delete-region (point) (point-max)))
+
 
 (defun org-roam-tags--insert-file-tag (tag)
   "Insert TAG into the file tag line."
   (save-excursion
-    (org-roam-tags--find-file-tags-line)
+    (org-roam-tags--find-file-tags-line-and-append)
     (if (org-roam-tags--ensure-tag-exists tag)
 	(org-roam-tags--insert-link-for-tag tag))))
+
 
 (defun org-roam-tags--insert-tag (tag)
   "Insert TAG into the file at point.
@@ -280,6 +316,7 @@ text."
 	 (node (org-roam-node-from-id id)))
     (org-roam-buffer-display-dedicated node)))
 
+
 (defun org-roam-tags--open-tag-link-at-point ()
   "Check for a tag link at point, and open it.
 
@@ -306,37 +343,29 @@ drop-through to the rest of the handlers."
 
 ;; ---------- Tag selection ----------
 
-;; This uses `completing-read' by default, and `helm' if present.
-
-(if (featurep 'helm)
-    (defun org-roam-tags--select-tag-and-go (f)
-      "Select a content tag using `helm' and pass it to F."
-      (helm :sources (helm-build-sync-source "org-roam tags"
-		       :candidates #'org-roam-tags--tags
-		       :volatile t
-		       :must-match 'ignore
-		       :action (list (cons "Add tag to tag line of note"
-					   (lambda (tag)
-					     (funcall f tag)))))
-	    :buffer "*org-roam content tags"
-	    :prompt "Content tag: "))
-
-  (defun org-roam-tags--select-tag-and-go (f)
-    "Select a content tag and pass it to F."
-    (let ((tag (completing-read "Content tag: " (org-roam-tags--tags) nil nil)))
-      (if tag
-	  (funcall f tag)))))
+(defun org-roam-tags--select-tag-and-go (f)
+  "Select a content tag and pass it to F."
+  (let ((tag (completing-read "Content tag: " (org-roam-tags--tags) nil nil)))
+    (if tag
+	(funcall f tag))))
 
 
 ;; ---------- Public interface ----------
 
-(defun org-roam-tags-tag-note ()
+(defun org-roam-tags-tag-note (fromscratch)
   "Tag the current note by adding a tag to its tag line.
 
 The tag is selected interactively. A tag line is added if needed.
-If the tag is new, a tag note is created for it."
-  (interactive)
+If the tag is new, a tag note is created for it.
+
+If executed with prefix argument FROMSCRATCH, the existing tags
+are deleted before selection is offered."
+  (interactive "P")
+
+  (if fromscratch
+      (org-roam-tags--find-file-tags-line-and-clear))
   (org-roam-tags--select-tag-and-go #'org-roam-tags--insert-file-tag))
+
 
 (defun org-roam-tags-tag-note-at-point ()
   "Tag the current note by inserting a tag at point.
@@ -345,6 +374,7 @@ The tag is selected interactively and if the tag is new, a
 tag note is created for it."
   (interactive)
   (org-roam-tags--select-tag-and-go #'org-roam-tags--insert-tag))
+
 
 (defun org-roam-tags-open-tag ()
   "Select a tag and open it."

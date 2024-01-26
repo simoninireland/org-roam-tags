@@ -109,13 +109,16 @@ git clone git@github.com/simoninireland/org-roam-tags.git
    tag, which are taken as all the notes matching the
    ~org-roam-tags-tag-regexp~ (see below).
 
-   If you have [[https://emacs-helm.github.io/helm/][Helm]] installed then ~org-roam-tags~ will automatically
-   use it instead of normal completion when entering tags.
-
    To add a content tag to a predictable place in a note, by default
    at the end, use ~C-c C-g~ (~org-roam-tags-tag-note~). This looks
-   for (and adds if necessary) a line beginning "+ tags :: " and then
-   adds the selected content tag.
+   for (and adds if necessary) a line beginning with a tags line marker
+   ("+ tags ::" by default, defined in
+   ~org-roam-tags--file-tags-line-marker~) and then adds the selected
+   content tag.
+
+   If you want to clear the tags line before adding the selected tag,
+   call ~org-roam-tags-tag-note~ with a prefix argument using ~C-u C-c
+   C-g~.
 
    To see the notes with a given content tag. use ~C-c M-g~
    (~org-roam-tags-open-tag~). This will open a buffer containing the
