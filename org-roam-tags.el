@@ -33,12 +33,18 @@
 ;; Org tags as they can be added anywhere in a note, not simply to
 ;; headings. We refer to thes emore flexible tags as "content" tags.
 ;;
-;; org-roam-tags provides three operations:
+;; org-roam-tags provides three user-level operations:
 ;;
 ;; - functions to add new content tags, either inline or at file level
 ;; - a function to open a backlinks buffer for a content tag
 ;; - a change to how links to content tags behave when followed,
 ;;   making them open the backlinks buffer (instead of the tag's note)
+;;
+;; and two programming operations:
+;;
+;; - to find all the tags in a buffer
+;; - to find all the file tags in a buffer, which are those on a line
+;;   starting "+ tags ::" by default
 
 ;;; Code:
 
@@ -70,12 +76,12 @@ probably no need to change this."
   :type 'string)
 
 
-(defcustom org-roam-tags-tag-regexp (rx (seq bol (one-or-more (in lower digit "-")) eol))
+(defcustom org-roam-tags-tag-regexp (rx (seq bol (one-or-more (in lower digit "-" ":")) eol))
   "Regular expression for recognising tags.
 
 Tags must always match `org-roam-tags-tag-sql'. This regexp further
 constrains the patterns used. The default is single words composed
-of lowercase letters, digits, and dashes."
+of lowercase letters, digits, dashes, and colons."
   :tag "Org Roam Tags content tag regexp"
   :type 'regexp
   :group 'org-roam)
@@ -380,6 +386,19 @@ tag note is created for it."
   "Select a tag and open it."
   (interactive)
   (org-roam-tags--select-tag-and-go #'org-roam-tags--open-tag))
+
+
+;; ---------- Public programming interface ----------
+
+(defun org-roam-tags-all-tags-in-buffer ()
+  "Return a list of strings representing all the tags found in this buffer."
+  (let* ((p (org-element-parse-buffer))
+	 (ids (org-element-map p 'link
+		(lambda (l)
+		  (if (equal (org-element-property :type l) "id")
+		      (org-element-property :path l)))))
+	 (tags (cl-remove-if #'null  (mapcar #'org-roam-tags--tag-for-id ids))))
+    tags))
 
 
 ;; ---------- Installation----------
