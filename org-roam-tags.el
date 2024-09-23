@@ -358,6 +358,7 @@ drop-through to the rest of the handlers."
 
 ;; ---------- Public interface ----------
 
+;;;###autoload
 (defun org-roam-tags-tag-note (fromscratch)
   "Tag the current note by adding a tag to its tag line.
 
@@ -373,6 +374,7 @@ are deleted before selection is offered."
   (org-roam-tags--select-tag-and-go #'org-roam-tags--insert-file-tag))
 
 
+;;;###autoload
 (defun org-roam-tags-tag-note-at-point ()
   "Tag the current note by inserting a tag at point.
 
@@ -382,6 +384,7 @@ tag note is created for it."
   (org-roam-tags--select-tag-and-go #'org-roam-tags--insert-tag))
 
 
+;;;###autoload
 (defun org-roam-tags-open-tag ()
   "Select a tag and open it."
   (interactive)
@@ -390,6 +393,7 @@ tag note is created for it."
 
 ;; ---------- Public programming interface ----------
 
+;;;###autoload
 (defun org-roam-tags-all-tags-in-buffer ()
   "Return a list of strings representing all the tags found in this buffer."
   (let* ((p (org-element-parse-buffer))
